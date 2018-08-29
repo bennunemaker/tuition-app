@@ -95,7 +95,7 @@ export default {
       if (!employee) return;
 
       // Update
-      if (employee.id) {
+      if (employee.id && employee.key) {
         employeesRef.child(employee.key).set(employee);
         return;
       }
