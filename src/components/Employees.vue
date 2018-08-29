@@ -10,7 +10,7 @@
                 </div>
             </div>
             <div class="row resultsModule">
-                <div class="col" v-if="!loading && !invalidConfig">
+                <div class="col" v-if="!loading && !invalidSetup">
                     <table v-if="employees.length">
                         <tr>
                             <th class="id">ID</th>
@@ -34,9 +34,9 @@
                         No Employees Yet!
                     </div>
                 </div>
-                <div class="col loadingModule" v-if="loading && !invalidConfig"></div>
-                <div class="col invalidModule" v-if="invalidConfig">
-                    <p>Please copy "config.example.js" to "config.js" and set config values.</p>
+                <div class="col loadingModule" v-if="loading && !invalidSetup"></div>
+                <div class="col invalidModule" v-if="invalidSetup">
+                    <p>Please copy "setup.example.js" to "setup.js" and set values.</p>
                 </div>
             </div>
             <div class="row">
@@ -49,38 +49,38 @@
 </template>
 
 <script>
-import Firebase from 'firebase/app'
-import 'firebase/database'
-import Config from '../../config'
+import Firebase from "firebase/app";
+import "firebase/database";
+import Setup from "../../setup";
 
 let employeesRef = null;
-let invalidConfig = false;
+let invalidSetup = false;
 
-if (Config && Config.firebasePath) {
-    let params = {
-        apiKey: "AIzaSyDZCK8rw1XSKn_Ajm1zrwCyCHAbEs1eHOw",
-        authDomain: Config.firebasePath + ".firebaseapp.com",
-        databaseURL: "https://" + Config.firebasePath + ".firebaseio.com",
-        projectId: Config.firebasePath,
-        storageBucket: Config.firebasePath + ".appspot.com",
-        messagingSenderId: "447846438512"
-    };
+if (Setup && Setup.firebasePath) {
+  let params = {
+    apiKey: "AIzaSyDZCK8rw1XSKn_Ajm1zrwCyCHAbEs1eHOw",
+    authDomain: Setup.firebasePath + ".firebaseapp.com",
+    databaseURL: "https://" + Setup.firebasePath + ".firebaseio.com",
+    projectId: Setup.firebasePath,
+    storageBucket: Setup.firebasePath + ".appspot.com",
+    messagingSenderId: "447846438512"
+  };
 
-    let app = Firebase.initializeApp(params);
-    let db = app.database();
-    employeesRef = db.ref('employees');
+  let app = Firebase.initializeApp(params);
+  let db = app.database();
+  employeesRef = db.ref("employees");
 } else {
-    invalidConfig = true;
+  invalidSetup = true;
 }
 
 export default {
-  name: 'Employees',
+  name: "Employees",
   data() {
     return {
       loading: true,
       error: false,
-      invalidConfig: invalidConfig
-    }
+      invalidSetup: invalidSetup
+    };
   },
   firebase: {
     employees: {
@@ -91,78 +91,80 @@ export default {
     }
   },
   created() {
-      eventBus.$on('saveModal', (employee) => {
-          if (!employee) return;
-          
-          // Update
-          if (employee.id) {
-            employeesRef.child(employee.key).set(employee);
-            return;
-          }
+    eventBus.$on("saveModal", employee => {
+      if (!employee) return;
 
-          // Create
-          employeesRef.push({
-              id: this.getNextEmployeeId(),
-              name: employee.name,
-              title: employee.title,
-              hireDate: employee.hireDate
-          });
-      })
+      // Update
+      if (employee.id) {
+        employeesRef.child(employee.key).set(employee);
+        return;
+      }
+
+      // Create
+      employeesRef.push({
+        id: this.getNextEmployeeId(),
+        name: employee.name,
+        title: employee.title,
+        hireDate: employee.hireDate
+      });
+    });
   },
   methods: {
     deleteEmployee(employee) {
-        employeesRef.child(employee['.key']).remove();
+      employeesRef.child(employee[".key"]).remove();
     },
     launchModal(data) {
-        eventBus.$emit('launchModal', data);
+      eventBus.$emit("launchModal", data);
     },
     getNextEmployeeId() {
-        let nextEmployeeId = 1;
-        if (!this.employees || !this.employees.length) return nextEmployeeId;
-        for (let i = 0; i < this.employees.length; i++) {
-            if (this.employees[i].id >= nextEmployeeId) nextEmployeeId = this.employees[i].id+1;
-        }
-        return nextEmployeeId;
+      let nextEmployeeId = 1;
+      if (!this.employees || !this.employees.length) return nextEmployeeId;
+      for (let i = 0; i < this.employees.length; i++) {
+        if (this.employees[i].id >= nextEmployeeId)
+          nextEmployeeId = this.employees[i].id + 1;
+      }
+      return nextEmployeeId;
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
 section {
-    min-height: 200px;
-    padding-bottom: 20px;
-    h1 {
-        font-size: 22px;
-        line-height: 30px;
-        font-weight: bold;
-        padding-bottom: 10px;
+  min-height: 200px;
+  padding-bottom: 20px;
+  h1 {
+    font-size: 22px;
+    line-height: 30px;
+    font-weight: bold;
+    padding-bottom: 10px;
+  }
+  a.ctaLink {
+    display: block;
+    font-weight: normal;
+  }
+  .resultsModule {
+    min-height: 100px;
+  }
+  .loadingModule {
+    background: url("../assets/loading.gif") center center no-repeat;
+    background-size: 147px 97px;
+  }
+  table {
+    margin-bottom: 20px;
+    th,
+    td {
+      padding-right: 30px;
+      width: 195px;
+      &.id {
+        width: 40px;
+      }
+      &.actions {
+        color: #aaa;
+        width: 92px;
+        padding-right: 0;
+      }
     }
-    a.ctaLink {
-        display: block;
-        font-weight: normal;
-    }
-    .resultsModule {
-        min-height: 100px;
-    }
-    .loadingModule {
-        background: url('../assets/loading.gif') center center no-repeat;
-        background-size: 147px 97px;
-    }
-    table {
-        margin-bottom: 20px;
-        th, td {
-            padding-right: 30px;
-            width: 195px;
-            &.id {
-                width: 40px;
-            }
-            &.actions {
-                color: #aaa;
-                width: 92px;
-                padding-right: 0;
-            }
-        }
-    }
+  }
 }
 </style>
