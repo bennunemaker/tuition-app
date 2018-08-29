@@ -36,7 +36,7 @@
                 </div>
                 <div class="col loadingModule" v-if="loading && !invalidSetup"></div>
                 <div class="col invalidModule" v-if="invalidSetup">
-                    <p>Please copy "setup.example.js" to "setup.js" and set values.</p>
+                    <p>Please copy "setup.template.js" to "setup.js" and set values.</p>
                 </div>
             </div>
             <div class="row">
